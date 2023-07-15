@@ -1,95 +1,78 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client"
+
+import styled from "styled-components"
+import Main from "./main/main"
+import Input from "./input/input"
+import { useEffect, useState } from "react"
+import axios from "axios"
+
+const Container = styled.div`
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  justify-content: center;
+  align-items: center;
+`
+
+export interface IMessage {
+  text: string;
+  colorType: "blue" | "gray";
+}
+
+export type reqAndResState = "classification" | "transform" | "loading";
 
 export default function Home() {
+  const [messages, setMessages] = useState<IMessage[] | null>([]);
+  const [reqAndResState, setReqAndResState] = useState<reqAndResState>("classification");
+  const [textStyleState, setTextStyleState] = useState("informal");
+
+  const handleSetMessages = async (text: string) => {
+    if (reqAndResState !== "loading") {
+      const updatedMessages: IMessage[] = [...messages!, { text: text, colorType: "blue" }];
+      setMessages(updatedMessages);
+      if (reqAndResState === "classification") {
+        setReqAndResState("loading");
+        await axios.post("http://localhost:8000/classification", { text })
+          .then(data => {
+            const updatedMessagesWithResponse: IMessage[] = [
+              ...updatedMessages, 
+              { text: `분석 완료! 대화 상대는 ${data.data} 말투 입니다.`, colorType: "gray" },
+              { text: "대화 상대에게 답장할 메시지를 입력하면, 말투를 변환합니다...", colorType: "gray" }
+            ];
+            setTextStyleState(data.data);
+            setReqAndResState("transform");
+            setMessages(updatedMessagesWithResponse);
+          })
+      } else if (reqAndResState === "transform") {
+        setReqAndResState("loading");
+        console.log(textStyleState);
+        await axios.post("http://localhost:8000/transform", { text, style: textStyleState })
+          .then(data => {
+            console.log(data.data);
+            const updatedMessagesWithResponse: IMessage[] = [
+              ...updatedMessages, 
+              { text: "말투 변환 완료!", colorType: "gray" },
+              { text: data.data, colorType: "gray" }
+            ];
+            setReqAndResState("classification")
+            setMessages(updatedMessagesWithResponse);
+          })
+      } 
+    }
+  }
+
+  useEffect(() => {
+    if (reqAndResState === "classification") {
+      setMessages([...messages!, { text: "대화 상대의 메시지를 입력하면, 말투를 분석합니다...", colorType: "gray" }])
+    }
+  }, [reqAndResState])
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <Container>
+      <Main messages={messages} />
+      <Input handleSetMessages={handleSetMessages} />
+    </Container>
   )
 }
