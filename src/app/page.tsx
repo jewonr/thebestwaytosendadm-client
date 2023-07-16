@@ -33,24 +33,21 @@ export default function Home() {
       const updatedMessages: IMessage[] = [...messages!, { text: text, colorType: "blue" }];
       setMessages(updatedMessages);
       if (reqAndResState === "classification") {
-        setReqAndResState("loading");
         await axios.post("http://localhost:8000/classification", { text })
           .then(data => {
             const updatedMessagesWithResponse: IMessage[] = [
               ...updatedMessages, 
-              { text: `분석 완료! 대화 상대는 ${data.data} 말투 입니다.`, colorType: "gray" },
+              { text: `분석 완료! 대화 상대는 ${data.data[1]} 말투 입니다.`, colorType: "gray" },
               { text: "대화 상대에게 답장할 메시지를 입력하면, 말투를 변환합니다...", colorType: "gray" }
             ];
-            setTextStyleState(data.data);
+            setTextStyleState(data.data[0]);
             setReqAndResState("transform");
             setMessages(updatedMessagesWithResponse);
           })
       } else if (reqAndResState === "transform") {
         setReqAndResState("loading");
-        console.log(textStyleState);
         await axios.post("http://localhost:8000/transform", { text, style: textStyleState })
           .then(data => {
-            console.log(data.data);
             const updatedMessagesWithResponse: IMessage[] = [
               ...updatedMessages, 
               { text: "말투 변환 완료!", colorType: "gray" },
@@ -65,7 +62,7 @@ export default function Home() {
 
   useEffect(() => {
     if (reqAndResState === "classification") {
-      setMessages([...messages!, { text: "대화 상대의 메시지를 입력하면, 말투를 분석합니다...", colorType: "gray" }])
+      setMessages(messages => [...messages!, { text: "대화 상대의 메시지를 입력하면, 말투를 분석합니다...", colorType: "gray" }])
     }
   }, [reqAndResState])
 

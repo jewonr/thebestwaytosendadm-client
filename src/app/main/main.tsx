@@ -3,6 +3,7 @@
 import styled from "styled-components"
 import Message from "./message"
 import { IMessage } from "../page"
+import { useEffect, useRef } from "react"
 
 const Container = styled.div`
   width: 65vw;
@@ -15,6 +16,11 @@ const Container = styled.div`
   flex-direction: column;
   gap: 15px;
   overflow-x: scroll;
+  scroll-behavior: smooth;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `
 
 type MainProps = {
@@ -22,8 +28,16 @@ type MainProps = {
 }
 
 export default function Main({ messages }: MainProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [messages])
+
   return (
-    <Container>
+    <Container ref={containerRef}>
       {messages?.map((val, idx) => (
         <Message colorType={val.colorType} text={val.text} key={idx} />
       ))}

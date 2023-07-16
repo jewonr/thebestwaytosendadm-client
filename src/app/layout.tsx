@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Noto_Sans_KR } from 'next/font/google'
+import StyledComponentsRegistry from './registry'
 
 const noto_sans_kr = Noto_Sans_KR({
   subsets: ['latin'],
@@ -20,9 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel='icon' href='/favicon.ico' />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
-      <body className={noto_sans_kr.className}>{children}</body>
+      <body className={noto_sans_kr.className}><StyledComponentsRegistry>{children}</StyledComponentsRegistry></body>
     </html>
   )
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState } from "react"
 import styled from "styled-components"
 
@@ -46,7 +47,7 @@ export default function Input({ handleSetMessages }: InputProps) {
   return (
     <Container>
       <TextInput onChange={onChangeInput} value={input} onKeyDown={handleKeyDown} />
-      <img src="/button.svg" onClick={() => { handleSetMessages(input); setInput("") }} />
+      <Image src="/button.svg" alt="button" onClick={() => { handleSetMessages(input); setInput("") }} />
     </Container>  
   )
 }
