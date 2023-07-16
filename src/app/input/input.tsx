@@ -47,7 +47,7 @@ export default function Input({ handleSetMessages }: InputProps) {
   return (
     <Container>
       <TextInput onChange={onChangeInput} value={input} onKeyDown={handleKeyDown} />
-      <Image src="/button.svg" alt="button" onClick={() => { handleSetMessages(input); setInput("") }} />
+      <Image src="/button.svg" alt="button" onClick={() => { handleSetMessages(input); setInput("") }} width={50} height={50} />
     </Container>  
   )
 }
